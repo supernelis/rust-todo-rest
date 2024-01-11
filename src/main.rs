@@ -10,7 +10,7 @@ use rocket::response::Responder;
 use rocket::serde::{Deserialize, json::Json};
 use serde::Serialize;
 
-static TODOS: Lazy<Mutex<HashMap<String, Todo>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+pub(crate) static TODOS: Lazy<Mutex<HashMap<String, Todo>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
 #[get("/")]
 fn index() -> &'static str {
@@ -35,10 +35,9 @@ fn update_task(id: String, input: Json<TodoUpdate>) -> Status {
 
 #[get("/tasks/<id>")]
 fn get_task(id: String) -> Json<Todo> {
-    Json(Todo{
-        id: "1".to_string(),
-        title: "a title".to_string()
-    })
+    let todo_map = TODOS.lock().unwrap();
+    let todo = todo_map.get(&id).unwrap();
+    Json(todo.clone())
 }
 
 #[derive(Deserialize)]
@@ -47,7 +46,7 @@ struct TodoUpdate {
     title: String
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 struct Todo {
     id: String,
