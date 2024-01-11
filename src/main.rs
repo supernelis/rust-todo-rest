@@ -5,6 +5,7 @@ use rocket::http::{Header, Status};
 use rocket::{Request, response, Response};
 use rocket::response::Responder;
 use rocket::serde::{Deserialize, json::Json};
+use serde::Serialize;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -19,16 +20,24 @@ fn add_task() -> TodoCreatedResponse {
 }
 
 #[put("/tasks/<id>", data = "<input>")]
-fn update_task(id: String, input: Json<Todo>) -> Status {
+fn update_task(id: String, input: Json<TodoUpdate>) -> Status {
     Status::Ok
 }
 
 
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
-struct Todo {
+struct TodoUpdate {
     title: String
 }
+
+#[derive(Deserialize, Serialize)]
+#[serde(crate = "rocket::serde")]
+struct Todo {
+    id: String,
+    title: String
+}
+
 
 struct TodoCreatedResponse {
     id: String
