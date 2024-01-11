@@ -1,11 +1,16 @@
 #[macro_use]
 extern crate rocket;
 
+use std::collections::HashMap;
+use std::sync::Mutex;
+use once_cell::sync::Lazy;
 use rocket::http::{Header, Status};
 use rocket::{Request, response, Response};
 use rocket::response::Responder;
 use rocket::serde::{Deserialize, json::Json};
 use serde::Serialize;
+
+static TODOS: Lazy<Mutex<HashMap<String, Todo>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
 #[get("/")]
 fn index() -> &'static str {
@@ -14,6 +19,10 @@ fn index() -> &'static str {
 
 #[post("/tasks")]
 fn add_task() -> TodoCreatedResponse {
+    TODOS.lock().unwrap().insert("1".to_string(),Todo{
+        id: "1".to_string(),
+        title: "a title".to_string()
+    });
     TodoCreatedResponse {
         id: "1".to_string()
     }
