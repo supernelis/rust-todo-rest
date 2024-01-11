@@ -4,6 +4,7 @@ extern crate rocket;
 use rocket::http::{Header, Status};
 use rocket::{Request, response, Response};
 use rocket::response::Responder;
+use rocket::serde::{Deserialize, json::Json};
 
 #[get("/")]
 fn index() -> &'static str {
@@ -15,6 +16,18 @@ fn add_task() -> TodoCreatedResponse {
     TodoCreatedResponse {
         id: "1".to_string()
     }
+}
+
+#[put("/tasks/<id>", data = "<input>")]
+fn update_task(id: String, input: Json<Todo>) -> Status {
+    Status::Ok
+}
+
+
+#[derive(Deserialize)]
+#[serde(crate = "rocket::serde")]
+struct Todo {
+    title: String
 }
 
 struct TodoCreatedResponse {
@@ -31,10 +44,9 @@ impl<'r> Responder<'r, 'static> for TodoCreatedResponse {
     }
 }
 
-
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index, add_task])
+    rocket::build().mount("/", routes![index, add_task, update_task])
 }
 
 #[cfg(test)]
@@ -70,5 +82,22 @@ mod test {
 
         assert_eq!(response.status(), Status::Created);
         assert_eq!(response.headers().get_one(LOCATION.as_str()).unwrap(), "/tasks/1");
+    }
+
+    #[test]
+    fn test_update_task() {
+        let client = Client::tracked(rocket()).expect("valid rocket instance");
+
+        let response = client
+            .put("/tasks/1")
+            .header(ContentType::JSON)
+            .body(r##"
+            {
+                "title": "another title"
+            }
+            "##)
+            .dispatch();
+
+        assert_eq!(response.status(), Status::Ok);
     }
 }
