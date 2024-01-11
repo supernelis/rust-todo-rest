@@ -4,28 +4,27 @@ extern crate rocket;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use once_cell::sync::Lazy;
-use rocket::{Request, response, Response};
+use rocket::{Request, response, Response, State};
 use rocket::http::{Header, Status};
 use rocket::response::Responder;
 use rocket::serde::{Deserialize, json::Json};
 use serde::Serialize;
-
-pub(crate) static TODOS: Lazy<Mutex<HashMap<String, Todo>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
 #[get("/")]
 fn index() -> &'static str {
     "Hello, world!"
 }
 
-#[post("/tasks")]
-fn add_task() -> TodoCreatedResponse {
-    TODOS.lock().unwrap().insert("1".to_string(),Todo{
-        id: "1".to_string(),
-        title: "a title".to_string()
+#[post("/tasks", data = "<todo>")]
+fn add_task(todo: Json<TodoUpdate>, todos: &State<Mutex<HashMap<String, Todo>>>) -> TodoCreatedResponse {
+    let mut todos_map = todos.lock().unwrap();
+    let todo_index = todos_map.len() + 1;
+    todos_map.insert(todo_index.to_string(), Todo{
+        id: todo_index.to_string(),
+        title: todo.title.clone()
     });
     TodoCreatedResponse {
-        id: "1".to_string()
+        id: todo_index.to_string()
     }
 }
 
@@ -35,11 +34,10 @@ fn update_task(id: String, input: Json<TodoUpdate>) -> Status {
 }
 
 #[get("/tasks/<id>")]
-fn get_task(id: &str) -> Result<Json<Todo>, String> {
-    let todo_map = TODOS.lock().unwrap();
-    todo_map.get(&id.to_string())
-        .map(|t| Json(t.clone()))
-        .ok_or_else(|| "Not Found".to_string())
+fn get_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Option<Json<Todo>> {
+    let mut todos_map = todos.lock().unwrap();
+    todos_map.get(&id.to_string())
+        .map(|todo| Json(todo.clone()))
 }
 
 #[derive(Deserialize)]
@@ -72,7 +70,10 @@ impl<'r> Responder<'r, 'static> for TodoCreatedResponse {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index, add_task, update_task, get_task])
+    let todos: Mutex<HashMap<String, Todo>> = Mutex::new(HashMap::new());
+    rocket::build()
+        .manage(todos)
+        .mount("/", routes![index, add_task, update_task, get_task])
 }
 
 #[cfg(test)]
@@ -81,7 +82,7 @@ mod test {
     use rocket::http::hyper::header::LOCATION;
     use rocket::local::blocking::Client;
 
-    use super::rocket;
+    use super::{rocket, Todo};
 
     #[test]
     fn hello_world() {
@@ -95,7 +96,7 @@ mod test {
     #[test]
     fn test_add_task() {
         let client = Client::tracked(rocket()).expect("valid rocket instance");
-        
+
         let response = client
             .post("/tasks/")
             .header(ContentType::JSON)
@@ -130,20 +131,34 @@ mod test {
     #[test]
     fn test_get_task() {
         let client = Client::tracked(rocket()).expect("valid rocket instance");
-        client
+        let location = client
             .post("/tasks/")
             .header(ContentType::JSON)
             .body(r##"
             {
-                "title": "a title"
+                "title": "new title"
             }
             "##)
-            .dispatch();
+            .dispatch()
+            .headers()
+            .get_one("Location")
+            .unwrap()
+            .to_string();
         let response = client
-            .get("/tasks/1")
+            .get(location)
+            .dispatch();
+        assert_eq!(response.status(), Status::Ok);
+        let todo = response.into_json::<Todo>().unwrap();
+        assert_eq!(todo.id, "1");
+        assert_eq!(todo.title, "new title")
+    }
+    #[test]
+    fn test_get_task_fails_with_404_when_getting_non_existent_task() {
+        let client = Client::tracked(rocket()).expect("valid rocket instance");
+        let response = client
+            .get("/tasks/123")
             .dispatch();
 
-        assert_eq!(response.status(), Status::Ok);
-        assert_eq!(response.into_string().unwrap(), r##"{"id":"1","title":"a title"}"##)
+        assert_eq!(response.status(), Status::NotFound);
     }
 }
