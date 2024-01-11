@@ -3,9 +3,10 @@ extern crate rocket;
 
 use std::collections::HashMap;
 use std::sync::Mutex;
+
 use once_cell::sync::Lazy;
-use rocket::http::{Header, Status};
 use rocket::{Request, response, Response};
+use rocket::http::{Header, Status};
 use rocket::response::Responder;
 use rocket::serde::{Deserialize, json::Json};
 use serde::Serialize;
@@ -34,10 +35,11 @@ fn update_task(id: String, input: Json<TodoUpdate>) -> Status {
 }
 
 #[get("/tasks/<id>")]
-fn get_task(id: String) -> Json<Todo> {
+fn get_task(id: &str) -> Result<Json<Todo>, String> {
     let todo_map = TODOS.lock().unwrap();
-    let todo = todo_map.get(&id).unwrap();
-    Json(todo.clone())
+    todo_map.get(&id.to_string())
+        .map(|t| Json(t.clone()))
+        .ok_or_else(|| "Not Found".to_string())
 }
 
 #[derive(Deserialize)]
@@ -78,7 +80,6 @@ mod test {
     use rocket::http::{ContentType, Status};
     use rocket::http::hyper::header::LOCATION;
     use rocket::local::blocking::Client;
-    use rocket::serde::json::Json;
 
     use super::rocket;
 
@@ -129,7 +130,15 @@ mod test {
     #[test]
     fn test_get_task() {
         let client = Client::tracked(rocket()).expect("valid rocket instance");
-
+        client
+            .post("/tasks/")
+            .header(ContentType::JSON)
+            .body(r##"
+            {
+                "title": "a title"
+            }
+            "##)
+            .dispatch();
         let response = client
             .get("/tasks/1")
             .dispatch();
