@@ -1,9 +1,9 @@
 #[macro_use]
 extern crate rocket;
 
-use rocket::http::Status;
-use rocket::response::status;
-use status::Created;
+use rocket::http::{Header, Status};
+use rocket::response;
+use rocket::response::{Responder, status};
 
 #[get("/")]
 fn index() -> &'static str {
@@ -11,8 +11,18 @@ fn index() -> &'static str {
 }
 
 #[post("/tasks")]
-fn add_task() -> Status {
-    Status::Created
+fn add_task() -> MyResponder {
+    MyResponder {
+        inner: Status::Created,
+        header: Header::new("Location","/tasks/1")
+    }
+}
+
+#[derive(Responder)]
+#[response(status = 201)]
+struct MyResponder {
+    inner: Status,
+    header: Header<'static>,
 }
 
 #[launch]
@@ -23,6 +33,7 @@ fn rocket() -> _ {
 #[cfg(test)]
 mod test {
     use rocket::http::{ContentType, Status};
+    use rocket::http::hyper::header::LOCATION;
     use rocket::local::blocking::Client;
 
     use super::rocket;
@@ -39,7 +50,6 @@ mod test {
     #[test]
     fn test_add_task() {
         let client = Client::tracked(rocket()).expect("valid rocket instance");
-
         
         let response = client
             .post("/tasks/")
@@ -52,5 +62,6 @@ mod test {
             .dispatch();
 
         assert_eq!(response.status(), Status::Created);
+        assert_eq!(response.headers().get_one(LOCATION.as_str()).unwrap(), "/tasks/1");
     }
 }
