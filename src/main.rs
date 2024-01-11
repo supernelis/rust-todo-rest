@@ -24,6 +24,13 @@ fn update_task(id: String, input: Json<TodoUpdate>) -> Status {
     Status::Ok
 }
 
+#[get("/tasks/<id>")]
+fn get_task(id: String) -> Json<Todo> {
+    Json(Todo{
+        id: "1".to_string(),
+        title: "a title".to_string()
+    })
+}
 
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -55,7 +62,7 @@ impl<'r> Responder<'r, 'static> for TodoCreatedResponse {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index, add_task, update_task])
+    rocket::build().mount("/", routes![index, add_task, update_task, get_task])
 }
 
 #[cfg(test)]
@@ -63,6 +70,7 @@ mod test {
     use rocket::http::{ContentType, Status};
     use rocket::http::hyper::header::LOCATION;
     use rocket::local::blocking::Client;
+    use rocket::serde::json::Json;
 
     use super::rocket;
 
@@ -108,5 +116,17 @@ mod test {
             .dispatch();
 
         assert_eq!(response.status(), Status::Ok);
+    }
+
+    #[test]
+    fn test_get_task() {
+        let client = Client::tracked(rocket()).expect("valid rocket instance");
+
+        let response = client
+            .get("/tasks/1")
+            .dispatch();
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().unwrap(), r##"{"id":"1","title":"a title"}"##)
     }
 }
