@@ -1,10 +1,9 @@
 #[macro_use]
 extern crate rocket;
 
-use rocket::figment::value::Empty;
 use rocket::http::{Header, Status};
-use rocket::response;
-use rocket::response::{Responder, status};
+use rocket::{Request, response, Response};
+use rocket::response::Responder;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -12,18 +11,26 @@ fn index() -> &'static str {
 }
 
 #[post("/tasks")]
-fn add_task() -> MyResponder {
-    MyResponder {
-        status: Status::Created,
-        header: Header::new("Location","/tasks/1")
+fn add_task() -> TodoCreatedResponse {
+    TodoCreatedResponse {
+        id: "1".to_string()
     }
 }
 
-#[derive(Responder)]
-struct MyResponder {
-    status: Status,
-    header: Header<'static>,
+struct TodoCreatedResponse {
+    id: String
 }
+
+#[rocket::async_trait]
+impl<'r> Responder<'r, 'static> for TodoCreatedResponse {
+    fn respond_to(self, _: &'r Request<'_>) -> response::Result<'static> {
+        Response::build()
+            .header(Header::new("Location", format!("/tasks/{}",self.id)))
+            .status(Status::Created)
+            .ok()
+    }
+}
+
 
 #[launch]
 fn rocket() -> _ {
