@@ -35,7 +35,7 @@ fn update_task(_id: String, _input: Json<TodoUpdate>) -> Status {
 
 #[get("/tasks/<id>")]
 fn get_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Option<Json<Todo>> {
-    let mut todos_map = todos.lock().unwrap();
+    let todos_map = todos.lock().unwrap();
     todos_map.get(&id.to_string())
         .map(|todo| Json(todo.clone()))
 }
