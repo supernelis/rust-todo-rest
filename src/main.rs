@@ -28,8 +28,8 @@ fn add_task(todo: Json<TodoUpdate>, todos: &State<Mutex<HashMap<String, Todo>>>)
     }
 }
 
-#[put("/tasks/<id>", data = "<input>")]
-fn update_task(id: String, input: Json<TodoUpdate>) -> Status {
+#[put("/tasks/<_id>", data = "<_input>")]
+fn update_task(_id: String, _input: Json<TodoUpdate>) -> Status {
     Status::Ok
 }
 
