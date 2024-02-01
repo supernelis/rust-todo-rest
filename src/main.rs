@@ -85,11 +85,11 @@ mod test {
 
     use super::{rocket, Todo};
 
-    struct MyContext {
+    struct TodoApp {
         client: Client,
     }
 
-    impl TestContext for MyContext {
+    impl TestContext for TodoApp {
         fn setup() -> Self {
             Self {
                 client: Client::tracked(rocket()).expect("valid rocket instance")
@@ -97,18 +97,18 @@ mod test {
         }
     }
 
-    #[test_context(MyContext)]
+    #[test_context(TodoApp)]
     #[test]
-    fn hello_world(ctx: &mut MyContext) {
+    fn hello_world(ctx: &mut TodoApp) {
         let response = ctx.client.get("/").dispatch();
 
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.into_string().unwrap(), "Hello, world!");
     }
 
-    #[test_context(MyContext)]
+    #[test_context(TodoApp)]
     #[test]
-    fn test_add_task(ctx: &mut MyContext) {
+    fn test_add_task(ctx: &mut TodoApp) {
         let response = ctx.client
             .post("/tasks/")
             .header(ContentType::JSON)
@@ -123,9 +123,9 @@ mod test {
         assert_eq!(response.headers().get_one(LOCATION.as_str()).unwrap(), "/tasks/1");
     }
 
-    #[test_context(MyContext)]
+    #[test_context(TodoApp)]
     #[test]
-    fn test_update_task(ctx: &mut MyContext) {
+    fn test_update_task(ctx: &mut TodoApp) {
         let response = ctx.client
             .put("/tasks/1")
             .header(ContentType::JSON)
@@ -139,9 +139,9 @@ mod test {
         assert_eq!(response.status(), Status::Ok);
     }
 
-    #[test_context(MyContext)]
+    #[test_context(TodoApp)]
     #[test]
-    fn test_get_task(ctx: &mut MyContext) {
+    fn test_get_task(ctx: &mut TodoApp) {
         let location = ctx.client
             .post("/tasks/")
             .header(ContentType::JSON)
@@ -164,9 +164,9 @@ mod test {
         assert_eq!(todo.title, "new title")
     }
 
-    #[test_context(MyContext)]
+    #[test_context(TodoApp)]
     #[test]
-    fn test_get_task_fails_with_404_when_getting_non_existent_task(ctx: &mut MyContext) {
+    fn test_get_task_fails_with_404_when_getting_non_existent_task(ctx: &mut TodoApp) {
         let response = ctx.client
             .get("/tasks/123")
             .dispatch();
