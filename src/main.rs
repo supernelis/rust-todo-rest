@@ -80,7 +80,7 @@ fn rocket() -> _ {
 mod test {
     use rocket::http::{ContentType, Status};
     use rocket::http::hyper::header::LOCATION;
-    use rocket::local::blocking::Client;
+    use rocket::local::blocking::{Client, LocalResponse};
     use test_context::{test_context, TestContext};
 
     use super::{rocket, Todo};
@@ -97,10 +97,16 @@ mod test {
         }
     }
 
+    impl TodoApp {
+        fn get<'a>(&'a self, uri: &'a str) -> LocalResponse {
+            self.client.get(uri).dispatch()
+        }
+    }
+
     #[test_context(TodoApp)]
     #[test]
-    fn hello_world(ctx: &mut TodoApp) {
-        let response = ctx.client.get("/").dispatch();
+    fn hello_world(todo_app: &mut TodoApp) {
+        let response = todo_app.get("/");
 
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.into_string().unwrap(), "Hello, world!");
