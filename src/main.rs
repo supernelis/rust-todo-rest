@@ -106,11 +106,10 @@ mod test {
         assert_eq!(response.into_string().unwrap(), "Hello, world!");
     }
 
+    #[test_context(MyContext)]
     #[test]
-    fn test_add_task() {
-        let client = Client::tracked(rocket()).expect("valid rocket instance");
-
-        let response = client
+    fn test_add_task(ctx: &mut MyContext) {
+        let response = ctx.client
             .post("/tasks/")
             .header(ContentType::JSON)
             .body(r##"
@@ -124,11 +123,10 @@ mod test {
         assert_eq!(response.headers().get_one(LOCATION.as_str()).unwrap(), "/tasks/1");
     }
 
+    #[test_context(MyContext)]
     #[test]
-    fn test_update_task() {
-        let client = Client::tracked(rocket()).expect("valid rocket instance");
-
-        let response = client
+    fn test_update_task(ctx: &mut MyContext) {
+        let response = ctx.client
             .put("/tasks/1")
             .header(ContentType::JSON)
             .body(r##"
@@ -141,10 +139,10 @@ mod test {
         assert_eq!(response.status(), Status::Ok);
     }
 
+    #[test_context(MyContext)]
     #[test]
-    fn test_get_task() {
-        let client = Client::tracked(rocket()).expect("valid rocket instance");
-        let location = client
+    fn test_get_task(ctx: &mut MyContext) {
+        let location = ctx.client
             .post("/tasks/")
             .header(ContentType::JSON)
             .body(r##"
@@ -157,7 +155,7 @@ mod test {
             .get_one("Location")
             .unwrap()
             .to_string();
-        let response = client
+        let response = ctx.client
             .get(location)
             .dispatch();
         assert_eq!(response.status(), Status::Ok);
@@ -166,10 +164,10 @@ mod test {
         assert_eq!(todo.title, "new title")
     }
 
+    #[test_context(MyContext)]
     #[test]
-    fn test_get_task_fails_with_404_when_getting_non_existent_task() {
-        let client = Client::tracked(rocket()).expect("valid rocket instance");
-        let response = client
+    fn test_get_task_fails_with_404_when_getting_non_existent_task(ctx: &mut MyContext) {
+        let response = ctx.client
             .get("/tasks/123")
             .dispatch();
 
