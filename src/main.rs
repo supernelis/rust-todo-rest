@@ -103,13 +103,19 @@ mod test {
         }
 
         fn post<'a>(&'a self, uri: &'a str, body: &'a str) -> LocalResponse {
-
-            let response = self.client
+            self.client
                 .post(uri)
                 .header(ContentType::JSON)
                 .body(body)
-                .dispatch();
-            response
+                .dispatch()
+        }
+
+        fn put<'a>(&'a self, uri: &'a str, body: &'a str) -> LocalResponse {
+            self.client
+                .put(uri)
+                .header(ContentType::JSON)
+                .body(body)
+                .dispatch()
         }
     }
 
@@ -137,16 +143,12 @@ mod test {
 
     #[test_context(TodoApp)]
     #[test]
-    fn test_update_task(ctx: &mut TodoApp) {
-        let response = ctx.client
-            .put("/tasks/1")
-            .header(ContentType::JSON)
-            .body(r##"
+    fn test_update_task(todo_app: &mut TodoApp) {
+        let response = todo_app.put("/tasks/1", r##"
             {
                 "title": "another title"
             }
-            "##)
-            .dispatch();
+            "##);
 
         assert_eq!(response.status(), Status::Ok);
     }
