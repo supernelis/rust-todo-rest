@@ -153,23 +153,17 @@ mod test {
 
     #[test_context(TodoApp)]
     #[test]
-    fn test_get_task(ctx: &mut TodoApp) {
-        let location = ctx.client
-            .post("/tasks/")
-            .header(ContentType::JSON)
-            .body(r##"
+    fn test_get_task(todo_app: &mut TodoApp) {
+        let location = todo_app.post("/tasks/",r##"
             {
                 "title": "new title"
             }
             "##)
-            .dispatch()
             .headers()
             .get_one("Location")
             .unwrap()
             .to_string();
-        let response = ctx.client
-            .get(location)
-            .dispatch();
+        let response = todo_app.get(&location);
         assert_eq!(response.status(), Status::Ok);
         let todo = response.into_json::<Todo>().unwrap();
         assert_eq!(todo.id, "1");
