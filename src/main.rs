@@ -162,26 +162,26 @@ mod test {
             }
             "##);
 
-        let get_task_response = todo_app.get(create_task_response.location());
+        let get_task_response = todo_app.get(create_task_response.extract_location());
         assert_eq!(get_task_response.status(), Status::Ok);
-        let todo = get_task_response.todo();
+        let todo = get_task_response.extract_todo();
         assert_eq!(todo.id, "1");
         assert_eq!(todo.title, "new title")
     }
 
-    trait LocationHeader {
-        fn location(&self) -> &str;
-        fn todo(self) -> Todo;
+    trait ExtractResponses {
+        fn extract_location(&self) -> &str;
+        fn extract_todo(self) -> Todo;
     }
 
-    impl LocationHeader for LocalResponse<'_> {
-        fn location(&self) -> &str {
+    impl ExtractResponses for LocalResponse<'_> {
+        fn extract_location(&self) -> &str {
             self.headers()
                 .get_one("Location")
                 .unwrap()
         }
 
-        fn todo(self) -> Todo {
+        fn extract_todo(self) -> Todo {
             self.into_json::<Todo>().unwrap()
         }
     }
