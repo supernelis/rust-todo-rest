@@ -154,13 +154,13 @@ mod test {
     #[test_context(TodoApp)]
     #[test]
     fn test_get_task(todo_app: &mut TodoApp) {
-        let location = todo_app.post("/tasks/",r##"
+        let response = todo_app.post("/tasks/",r##"
             {
                 "title": "new title"
             }
-            "##)
-            .location();
-        let response = todo_app.get(&location);
+            "##);
+
+        let response = todo_app.get(response.location());
         assert_eq!(response.status(), Status::Ok);
         let todo = response.into_json::<Todo>().unwrap();
         assert_eq!(todo.id, "1");
@@ -168,15 +168,14 @@ mod test {
     }
 
     trait LocationHeader {
-        fn location(&self) -> String;
+        fn location(&self) -> &str;
     }
 
     impl LocationHeader for LocalResponse<'_> {
-        fn location(&self) -> String{
+        fn location(&self) -> &str {
             self.headers()
                 .get_one("Location")
                 .unwrap()
-                .to_string()
         }
     }
 
