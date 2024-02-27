@@ -159,15 +159,25 @@ mod test {
                 "title": "new title"
             }
             "##)
-            .headers()
-            .get_one("Location")
-            .unwrap()
-            .to_string();
+            .location();
         let response = todo_app.get(&location);
         assert_eq!(response.status(), Status::Ok);
         let todo = response.into_json::<Todo>().unwrap();
         assert_eq!(todo.id, "1");
         assert_eq!(todo.title, "new title")
+    }
+
+    trait LocationHeader {
+        fn location(&self) -> String;
+    }
+
+    impl LocationHeader for LocalResponse<'_> {
+        fn location(&self) -> String{
+            self.headers()
+                .get_one("Location")
+                .unwrap()
+                .to_string()
+        }
     }
 
     #[test_context(TodoApp)]
