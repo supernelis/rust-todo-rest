@@ -154,15 +154,15 @@ mod test {
     #[test_context(TodoApp)]
     #[test]
     fn test_get_task(todo_app: &mut TodoApp) {
-        let response = todo_app.post("/tasks/",r##"
+        let create_task_response = todo_app.post("/tasks/", r##"
             {
                 "title": "new title"
             }
             "##);
 
-        let response = todo_app.get(response.location());
-        assert_eq!(response.status(), Status::Ok);
-        let todo = response.into_json::<Todo>().unwrap();
+        let get_task_response = todo_app.get(create_task_response.location());
+        assert_eq!(get_task_response.status(), Status::Ok);
+        let todo = get_task_response.into_json::<Todo>().unwrap();
         assert_eq!(todo.id, "1");
         assert_eq!(todo.title, "new title")
     }
