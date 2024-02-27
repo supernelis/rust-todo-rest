@@ -101,6 +101,16 @@ mod test {
         fn get<'a>(&'a self, uri: &'a str) -> LocalResponse {
             self.client.get(uri).dispatch()
         }
+
+        fn post<'a>(&'a self, uri: &'a str, body: &'a str) -> LocalResponse {
+
+            let response = self.client
+                .post(uri)
+                .header(ContentType::JSON)
+                .body(body)
+                .dispatch();
+            response
+        }
     }
 
     #[test_context(TodoApp)]
@@ -114,16 +124,12 @@ mod test {
 
     #[test_context(TodoApp)]
     #[test]
-    fn test_add_task(ctx: &mut TodoApp) {
-        let response = ctx.client
-            .post("/tasks/")
-            .header(ContentType::JSON)
-            .body(r##"
+    fn test_add_task(todo_app: &mut TodoApp) {
+        let response = todo_app.post("/tasks/", r##"
             {
                 "title": "a title"
             }
-            "##)
-            .dispatch();
+            "##);
 
         assert_eq!(response.status(), Status::Created);
         assert_eq!(response.headers().get_one(LOCATION.as_str()).unwrap(), "/tasks/1");
