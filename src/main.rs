@@ -162,13 +162,14 @@ mod test {
 
         let get_task_response = todo_app.get(create_task_response.location());
         assert_eq!(get_task_response.status(), Status::Ok);
-        let todo = get_task_response.into_json::<Todo>().unwrap();
+        let todo = get_task_response.todo();
         assert_eq!(todo.id, "1");
         assert_eq!(todo.title, "new title")
     }
 
     trait LocationHeader {
         fn location(&self) -> &str;
+        fn todo(self) -> Todo;
     }
 
     impl LocationHeader for LocalResponse<'_> {
@@ -176,6 +177,10 @@ mod test {
             self.headers()
                 .get_one("Location")
                 .unwrap()
+        }
+
+        fn todo(self) -> Todo {
+            self.into_json::<Todo>().unwrap()
         }
     }
 
