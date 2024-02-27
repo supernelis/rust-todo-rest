@@ -85,40 +85,6 @@ mod test {
 
     use super::{rocket, Todo};
 
-    struct TodoApp {
-        client: Client,
-    }
-
-    impl TestContext for TodoApp {
-        fn setup() -> Self {
-            Self {
-                client: Client::tracked(rocket()).expect("valid rocket instance")
-            }
-        }
-    }
-
-    impl TodoApp {
-        fn get<'a>(&'a self, uri: &'a str) -> LocalResponse {
-            self.client.get(uri).dispatch()
-        }
-
-        fn post<'a>(&'a self, uri: &'a str, body: &'a str) -> LocalResponse {
-            self.client
-                .post(uri)
-                .header(ContentType::JSON)
-                .body(body)
-                .dispatch()
-        }
-
-        fn put<'a>(&'a self, uri: &'a str, body: &'a str) -> LocalResponse {
-            self.client
-                .put(uri)
-                .header(ContentType::JSON)
-                .body(body)
-                .dispatch()
-        }
-    }
-
     #[test_context(TodoApp)]
     #[test]
     fn hello_world(todo_app: &mut TodoApp) {
@@ -169,6 +135,14 @@ mod test {
         assert_eq!(todo.title, "new title")
     }
 
+
+    #[test_context(TodoApp)]
+    #[test]
+    fn test_get_task_fails_with_404_when_getting_non_existent_task(todo_app: &mut TodoApp) {
+        let response = todo_app.get("/tasks/123");
+        assert_eq!(response.status(), Status::NotFound);
+    }
+
     trait ExtractResponses {
         fn extract_location(&self) -> &str;
         fn extract_todo(self) -> Todo;
@@ -186,10 +160,37 @@ mod test {
         }
     }
 
-    #[test_context(TodoApp)]
-    #[test]
-    fn test_get_task_fails_with_404_when_getting_non_existent_task(todo_app: &mut TodoApp) {
-        let response = todo_app.get("/tasks/123");
-        assert_eq!(response.status(), Status::NotFound);
+    struct TodoApp {
+        client: Client,
+    }
+
+    impl TestContext for TodoApp {
+        fn setup() -> Self {
+            Self {
+                client: Client::tracked(rocket()).expect("valid rocket instance")
+            }
+        }
+    }
+
+    impl TodoApp {
+        fn get<'a>(&'a self, uri: &'a str) -> LocalResponse {
+            self.client.get(uri).dispatch()
+        }
+
+        fn post<'a>(&'a self, uri: &'a str, body: &'a str) -> LocalResponse {
+            self.client
+                .post(uri)
+                .header(ContentType::JSON)
+                .body(body)
+                .dispatch()
+        }
+
+        fn put<'a>(&'a self, uri: &'a str, body: &'a str) -> LocalResponse {
+            self.client
+                .put(uri)
+                .header(ContentType::JSON)
+                .body(body)
+                .dispatch()
+        }
     }
 }
