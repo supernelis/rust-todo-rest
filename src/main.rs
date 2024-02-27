@@ -178,11 +178,8 @@ mod test {
 
     #[test_context(TodoApp)]
     #[test]
-    fn test_get_task_fails_with_404_when_getting_non_existent_task(ctx: &mut TodoApp) {
-        let response = ctx.client
-            .get("/tasks/123")
-            .dispatch();
-
+    fn test_get_task_fails_with_404_when_getting_non_existent_task(todo_app: &mut TodoApp) {
+        let response = todo_app.get("/tasks/123");
         assert_eq!(response.status(), Status::NotFound);
     }
 }
