@@ -179,6 +179,26 @@ mod test {
         assert_eq!(delete_response.status(), Status::NotFound);
     }
 
+    #[test_context(TodoApp)]
+    #[test]
+    fn test_complete_a_task(todo_app: &mut TodoApp) {
+        let response = todo_app.post("/tasks/", r##"
+            {
+                "title": "new title",
+                "done": false
+            }
+            "##);
+
+        let response = todo_app.patch("/tasks/1", r##"
+            {
+                "done": true
+            }
+            "##);
+
+        assert_eq!(response.status(), Status::Accepted);
+
+    }
+
     trait ExtractResponses {
         fn extract_location(&self) -> &str;
         fn extract_todo(self) -> Todo;
