@@ -27,6 +27,7 @@ fn add_task(todo: Json<TodoCreate>, todos: &State<Mutex<HashMap<String, Todo>>>)
     todos_map.insert(todo_index.to_string(), Todo {
         id: todo_index.to_string(),
         title: todo.title.clone(),
+        done: false
     });
     TodoCreatedResponse {
         id: todo_index.to_string()
@@ -72,6 +73,7 @@ struct TodoUpdate {
 struct Todo {
     id: String,
     title: String,
+    done: bool
 }
 
 
@@ -153,7 +155,8 @@ mod test {
         assert_eq!(get_task_response.status(), Status::Ok);
         let todo = get_task_response.extract_todo();
         assert_eq!(todo.id, "1");
-        assert_eq!(todo.title, "new title")
+        assert_eq!(todo.title, "new title");
+        assert_eq!(todo.done, false)
     }
 
 
