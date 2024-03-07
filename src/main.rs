@@ -43,7 +43,10 @@ fn get_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Option<Jso
 #[delete("/tasks/<id>")]
 fn delete_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Status {
     let mut todos_map = todos.lock().unwrap();
-    todos_map.remove(id);
+    let remove_status = todos_map.remove(id);
+    if(remove_status == None) {
+        return Status::NotFound
+    }
     Status::Accepted
 }
 
@@ -55,6 +58,7 @@ struct TodoUpdate {
 
 #[derive(Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
+#[derive(PartialEq)]
 struct Todo {
     id: String,
     title: String,
