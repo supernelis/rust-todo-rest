@@ -197,12 +197,12 @@ mod test {
     fn test_complete_a_task(todo_app: &mut TodoApp) {
         let response = todo_app.post("/tasks/", r##"
             {
-                "title": "new title",
-                "done": false
+                "title": "new title"
             }
             "##);
 
-        let response = todo_app.patch("/tasks/1", r##"
+        let location = response.extract_location();
+        let response = todo_app.patch(location, r##"
             {
                 "done": true
             }
@@ -210,6 +210,9 @@ mod test {
 
         assert_eq!(response.status(), Status::Accepted);
 
+        let get_task_response = todo_app.get(location);
+        let todo = get_task_response.extract_todo();
+        assert_eq!(todo.done, true)
     }
 
     trait ExtractResponses {
