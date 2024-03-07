@@ -40,6 +40,13 @@ fn get_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Option<Jso
         .map(|todo| Json(todo.clone()))
 }
 
+#[delete("/tasks/<id>")]
+fn delete_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Status {
+    let mut todos_map = todos.lock().unwrap();
+    todos_map.remove(id);
+    Status::Accepted
+}
+
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
 struct TodoUpdate {
@@ -73,7 +80,7 @@ fn rocket() -> _ {
     let todos: Mutex<HashMap<String, Todo>> = Mutex::new(HashMap::new());
     rocket::build()
         .manage(todos)
-        .mount("/", routes![index, add_task, update_task, get_task])
+        .mount("/", routes![index, add_task, update_task, get_task, delete_task])
 }
 
 #[cfg(test)]
@@ -181,6 +188,12 @@ mod test {
 
     struct TodoApp {
         client: Client,
+    }
+
+    impl TodoApp {
+        pub fn delete<'a>(&'a self, uri: &'a str) -> LocalResponse {
+           self.client.delete(uri).dispatch()
+        }
     }
 
     impl TestContext for TodoApp {
