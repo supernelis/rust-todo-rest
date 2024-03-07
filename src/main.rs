@@ -15,13 +15,18 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
+#[derive(Deserialize)]
+#[serde(crate = "rocket::serde")]
+struct TodoCreate {
+    title: String,
+}
 #[post("/tasks", data = "<todo>")]
-fn add_task(todo: Json<TodoUpdate>, todos: &State<Mutex<HashMap<String, Todo>>>) -> TodoCreatedResponse {
+fn add_task(todo: Json<TodoCreate>, todos: &State<Mutex<HashMap<String, Todo>>>) -> TodoCreatedResponse {
     let mut todos_map = todos.lock().unwrap();
     let todo_index = todos_map.len() + 1;
     todos_map.insert(todo_index.to_string(), Todo {
         id: todo_index.to_string(),
-        title: todo.title.clone().unwrap(),
+        title: todo.title.clone(),
     });
     TodoCreatedResponse {
         id: todo_index.to_string()
