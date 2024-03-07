@@ -152,7 +152,7 @@ mod test {
 
     #[test_context(TodoApp)]
     #[test]
-    fn test_something(todo_app: &mut TodoApp) {
+    fn test_delete(todo_app: &mut TodoApp) {
         let response = todo_app.post("/tasks/", r##"
             {
                 "title": "new title"
@@ -166,7 +166,13 @@ mod test {
 
         let get_response = todo_app.get(location);
         assert_eq!(get_response.status(), Status::NotFound);
+    }
 
+    #[test_context(TodoApp)]
+    #[test]
+    fn test_delete_a_non_existing_task(todo_app: &mut TodoApp) {
+        let delete_response = todo_app.delete("/tasks/1");
+        assert_eq!(delete_response.status(), Status::NotFound);
     }
 
     trait ExtractResponses {
