@@ -44,7 +44,7 @@ fn get_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Option<Jso
 fn delete_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Status {
     let mut todos_map = todos.lock().unwrap();
     let remove_status = todos_map.remove(id);
-    if(remove_status == None) {
+    if remove_status == None {
         return Status::NotFound
     }
     Status::Accepted
