@@ -220,6 +220,17 @@ mod test {
         let todo = get_task_response.extract_todo();
         assert_eq!(todo.done, true)
     }
+    #[test_context(TodoApp)]
+    #[test]
+    fn test_mark_as_complete_a_nonexistent_task(todo_app: &mut TodoApp) {
+        let response = todo_app.patch("/tasks/1", r##"
+            {
+                "done": true
+            }
+            "##);
+
+        assert_eq!(response.status(), Status::NotFound);
+    }
 
     trait ExtractResponses {
         fn extract_location(&self) -> &str;
