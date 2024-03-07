@@ -190,12 +190,6 @@ mod test {
         client: Client,
     }
 
-    impl TodoApp {
-        pub fn delete<'a>(&'a self, uri: &'a str) -> LocalResponse {
-           self.client.delete(uri).dispatch()
-        }
-    }
-
     impl TestContext for TodoApp {
         fn setup() -> Self {
             Self {
@@ -223,6 +217,10 @@ mod test {
                 .header(ContentType::JSON)
                 .body(body)
                 .dispatch()
+        }
+
+        pub fn delete<'a>(&'a self, uri: &'a str) -> LocalResponse {
+            self.client.delete(uri).dispatch()
         }
     }
 }
