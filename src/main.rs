@@ -21,7 +21,7 @@ fn add_task(todo: Json<TodoUpdate>, todos: &State<Mutex<HashMap<String, Todo>>>)
     let todo_index = todos_map.len() + 1;
     todos_map.insert(todo_index.to_string(), Todo {
         id: todo_index.to_string(),
-        title: todo.title.clone(),
+        title: todo.title.clone().unwrap(),
     });
     TodoCreatedResponse {
         id: todo_index.to_string()
@@ -31,6 +31,11 @@ fn add_task(todo: Json<TodoUpdate>, todos: &State<Mutex<HashMap<String, Todo>>>)
 #[put("/tasks/<_id>", data = "<_input>")]
 fn update_task(_id: String, _input: Json<TodoUpdate>) -> Status {
     Status::Ok
+}
+
+#[patch("/tasks/<_id>", data = "<_input>")]
+fn patch_task(_id: String, _input: Json<TodoUpdate>) -> Status {
+    Status::Accepted
 }
 
 #[get("/tasks/<id>")]
@@ -53,7 +58,7 @@ fn delete_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Status 
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
 struct TodoUpdate {
-    title: String,
+    title: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -84,7 +89,7 @@ fn rocket() -> _ {
     let todos: Mutex<HashMap<String, Todo>> = Mutex::new(HashMap::new());
     rocket::build()
         .manage(todos)
-        .mount("/", routes![index, add_task, update_task, get_task, delete_task])
+        .mount("/", routes![index, add_task, update_task, patch_task, get_task, delete_task])
 }
 
 #[cfg(test)]
@@ -218,6 +223,16 @@ mod test {
 
     struct TodoApp {
         client: Client,
+    }
+
+    impl TodoApp {
+        pub fn patch<'a>(&'a self, uri: &'a str, body: &str) -> LocalResponse {
+            self.client
+                .patch(uri)
+                .header(ContentType::JSON)
+                .body(body)
+                .dispatch()
+        }
     }
 
     impl TestContext for TodoApp {
