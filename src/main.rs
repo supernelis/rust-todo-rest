@@ -17,6 +17,7 @@ mod test {
     use rocket::http::hyper::header::LOCATION;
     use rocket::local::blocking::{Client, LocalResponse};
     use test_context::{test_context, TestContext};
+    use crate::controllers::rocket;
 
     use crate::core::Todo;
 
@@ -175,7 +176,7 @@ mod test {
     impl TestContext for TodoApp {
         fn setup() -> Self {
             Self {
-                client: Client::tracked(app()).expect("valid rocket instance")
+                client: Client::tracked(rocket()).expect("valid rocket instance")
             }
         }
     }
