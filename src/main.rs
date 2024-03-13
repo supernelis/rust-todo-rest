@@ -4,9 +4,8 @@ extern crate rocket;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use rocket::{Request, response, Response, State};
-use rocket::http::{Header, Status};
-use rocket::response::Responder;
+use rocket::State;
+use rocket::http::Status;
 use rocket::serde::{Deserialize, json::Json};
 mod core;
 use crate::core::Todo;
@@ -80,7 +79,6 @@ fn delete_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Status 
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
 struct TodoUpdate {
-    title: Option<String>,
     done: Option<bool>,
 }
 
