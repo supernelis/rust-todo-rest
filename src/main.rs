@@ -20,9 +20,6 @@ mod test {
     use crate::controllers::rocket;
 
     use crate::core::Todo;
-
-    use super::app;
-
     #[test_context(TodoApp)]
     #[test]
     fn hello_world(todo_app: &mut TodoApp) {
