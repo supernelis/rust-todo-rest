@@ -8,10 +8,9 @@ use rocket::{Request, response, Response, State};
 use rocket::http::{Header, Status};
 use rocket::response::Responder;
 use rocket::serde::{Deserialize, json::Json};
+mod core;
+use crate::core::Todo;
 
-mod domain;
-
-use crate::domain::Todo;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -112,8 +111,9 @@ mod test {
     use rocket::http::hyper::header::LOCATION;
     use rocket::local::blocking::{Client, LocalResponse};
     use test_context::{test_context, TestContext};
+    use crate::core::Todo;
 
-    use super::{rocket, Todo};
+    use super::{rocket};
 
     #[test_context(TodoApp)]
     #[test]
