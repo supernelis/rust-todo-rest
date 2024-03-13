@@ -1,4 +1,5 @@
 mod todo_created_response;
+mod todo_create;
 
 use rocket::serde::json::Json;
 use rocket::{Route, State};
@@ -6,6 +7,7 @@ use std::sync::Mutex;
 use std::collections::HashMap;
 use rocket::http::Status;
 use rocket::serde::Deserialize;
+use todo_create::TodoCreate;
 pub use todo_created_response::TodoCreatedResponse;
 use crate::core::Todo;
 
@@ -16,12 +18,6 @@ pub fn todo_routes() -> Vec<Route> {
 #[get("/")]
 fn index() -> &'static str {
     "Hello, world!"
-}
-
-#[derive(Deserialize)]
-#[serde(crate = "rocket::serde")]
-struct TodoCreate {
-    title: String,
 }
 
 #[post("/tasks", data = "<todo>")]
