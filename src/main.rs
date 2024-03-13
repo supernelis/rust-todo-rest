@@ -43,12 +43,15 @@ fn update_task(_id: String, _input: Json<TodoUpdate>) -> Status {
 fn patch_task(id: String, input: Json<TodoUpdate>,  todos: &State<Mutex<HashMap<String, Todo>>>) -> Status {
     let mut todos_map = todos.lock().unwrap();
 
-    if let Some(todo) = todos_map.get_mut(&id.to_string()) {
-        todo.done = input.done.unwrap();
+    match todos_map.get_mut(&id.to_string()) {
+        Some(todo) => {
+            todo.done = input.done.unwrap();
 
-        Status::Accepted
-    }else{
-        Status::NotFound
+            Status::Accepted
+        }
+        None => {
+            Status::NotFound
+        }
     }
 }
 
