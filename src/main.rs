@@ -8,9 +8,9 @@ use rocket::{Request, response, Response, State};
 use rocket::http::{Header, Status};
 use rocket::response::Responder;
 use rocket::serde::{Deserialize, json::Json};
-use serde::Serialize;
 
 mod todo;
+
 use crate::todo::Todo;
 
 #[get("/")]
@@ -23,6 +23,7 @@ fn index() -> &'static str {
 struct TodoCreate {
     title: String,
 }
+
 #[post("/tasks", data = "<todo>")]
 fn add_task(todo: Json<TodoCreate>, todos: &State<Mutex<HashMap<String, Todo>>>) -> TodoCreatedResponse {
     let mut todos_map = todos.lock().unwrap();
@@ -30,7 +31,7 @@ fn add_task(todo: Json<TodoCreate>, todos: &State<Mutex<HashMap<String, Todo>>>)
     todos_map.insert(todo_index.to_string(), Todo {
         id: todo_index.to_string(),
         title: todo.title.clone(),
-        done: false
+        done: false,
     });
     TodoCreatedResponse {
         id: todo_index.to_string()
@@ -43,7 +44,7 @@ fn update_task(_id: String, _input: Json<TodoUpdate>) -> Status {
 }
 
 #[patch("/tasks/<id>", data = "<input>")]
-fn patch_task(id: String, input: Json<TodoUpdate>,  todos: &State<Mutex<HashMap<String, Todo>>>) -> Status {
+fn patch_task(id: String, input: Json<TodoUpdate>, todos: &State<Mutex<HashMap<String, Todo>>>) -> Status {
     let mut todos_map = todos.lock().unwrap();
 
     match todos_map.get_mut(&id.to_string()) {
@@ -70,7 +71,7 @@ fn delete_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Status 
     let mut todos_map = todos.lock().unwrap();
     let remove_status = todos_map.remove(id);
     if remove_status == None {
-        return Status::NotFound
+        return Status::NotFound;
     }
     Status::Accepted
 }
@@ -79,9 +80,8 @@ fn delete_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Status 
 #[serde(crate = "rocket::serde")]
 struct TodoUpdate {
     title: Option<String>,
-    done: Option<bool>
+    done: Option<bool>,
 }
-
 
 
 struct TodoCreatedResponse {
@@ -221,6 +221,7 @@ mod test {
         let todo = get_task_response.extract_todo();
         assert_eq!(todo.done, true)
     }
+
     #[test_context(TodoApp)]
     #[test]
     fn test_mark_as_complete_a_nonexistent_task(todo_app: &mut TodoApp) {
