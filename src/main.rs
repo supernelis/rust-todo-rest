@@ -9,9 +9,9 @@ use rocket::http::{Header, Status};
 use rocket::response::Responder;
 use rocket::serde::{Deserialize, json::Json};
 
-mod todo;
+mod domain;
 
-use crate::todo::Todo;
+use crate::domain::Todo;
 
 #[get("/")]
 fn index() -> &'static str {
