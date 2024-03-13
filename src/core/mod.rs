@@ -1,3 +1,3 @@
-mod domain;
+mod todo;
 
-pub use domain::Todo;
+pub use todo::Todo;
