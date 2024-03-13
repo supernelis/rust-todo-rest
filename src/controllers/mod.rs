@@ -1,6 +1,7 @@
 mod todo_created_response;
 mod todo_create;
 
+use rocket::routes;
 use rocket::serde::json::Json;
 use rocket::{Build, Rocket, Route, State};
 use std::sync::Mutex;
