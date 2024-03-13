@@ -9,6 +9,7 @@ use rocket::http::{Header, Status};
 use rocket::response::Responder;
 use rocket::serde::{Deserialize, json::Json};
 use serde::Serialize;
+use crate::todo::Todo;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -79,14 +80,19 @@ struct TodoUpdate {
     done: Option<bool>
 }
 
-#[derive(Deserialize, Serialize, Clone)]
-#[serde(crate = "rocket::serde")]
-#[derive(PartialEq)]
-struct Todo {
-    id: String,
-    title: String,
-    done: bool
+mod todo {
+    use rocket::serde::{Deserialize, Serialize};
+
+    #[derive(Deserialize, Serialize, Clone)]
+    #[serde(crate = "rocket::serde")]
+    #[derive(PartialEq)]
+    pub struct Todo {
+        pub(crate) id: String,
+        pub(crate) title: String,
+        pub(crate) done: bool
+    }
 }
+
 
 
 struct TodoCreatedResponse {
