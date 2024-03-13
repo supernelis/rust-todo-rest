@@ -9,6 +9,8 @@ use rocket::http::{Header, Status};
 use rocket::response::Responder;
 use rocket::serde::{Deserialize, json::Json};
 use serde::Serialize;
+
+mod todo;
 use crate::todo::Todo;
 
 #[get("/")]
@@ -78,19 +80,6 @@ fn delete_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Status 
 struct TodoUpdate {
     title: Option<String>,
     done: Option<bool>
-}
-
-mod todo {
-    use rocket::serde::{Deserialize, Serialize};
-
-    #[derive(Deserialize, Serialize, Clone)]
-    #[serde(crate = "rocket::serde")]
-    #[derive(PartialEq)]
-    pub struct Todo {
-        pub(crate) id: String,
-        pub(crate) title: String,
-        pub(crate) done: bool
-    }
 }
 
 
