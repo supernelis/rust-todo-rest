@@ -2,7 +2,7 @@ mod todo_created_response;
 mod todo_create;
 
 use rocket::serde::json::Json;
-use rocket::{Route, State};
+use rocket::{Build, Rocket, Route, State};
 use std::sync::Mutex;
 use std::collections::HashMap;
 use rocket::http::Status;
@@ -76,4 +76,11 @@ fn delete_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Status 
 #[serde(crate = "rocket::serde")]
 struct TodoUpdate {
     done: Option<bool>,
+}
+
+pub fn rocket() -> Rocket<Build> {
+    let todos: Mutex<HashMap<String, Todo>> = Mutex::new(HashMap::new());
+    rocket::build()
+        .manage(todos)
+        .mount("/", todo_routes())
 }

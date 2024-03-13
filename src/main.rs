@@ -1,22 +1,15 @@
 #[macro_use]
 extern crate rocket;
 
-use std::collections::HashMap;
-use std::sync::Mutex;
-
-use crate::core::Todo;
+use crate::controllers::rocket;
 
 mod core;
 mod controllers;
 
 #[launch]
-fn rocket() -> _ {
-    let todos: Mutex<HashMap<String, Todo>> = Mutex::new(HashMap::new());
-    rocket::build()
-        .manage(todos)
-        .mount("/", controllers::todo_routes())
+fn app() -> _ {
+    rocket()
 }
-
 
 #[cfg(test)]
 mod test {
@@ -27,7 +20,7 @@ mod test {
 
     use crate::core::Todo;
 
-    use super::rocket;
+    use super::app;
 
     #[test_context(TodoApp)]
     #[test]
@@ -182,7 +175,7 @@ mod test {
     impl TestContext for TodoApp {
         fn setup() -> Self {
             Self {
-                client: Client::tracked(rocket()).expect("valid rocket instance")
+                client: Client::tracked(app()).expect("valid rocket instance")
             }
         }
     }
