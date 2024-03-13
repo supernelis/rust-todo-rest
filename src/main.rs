@@ -11,6 +11,8 @@ use rocket::serde::{Deserialize, json::Json};
 mod core;
 use crate::core::Todo;
 
+mod rest;
+use crate::rest::TodoCreatedResponse;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -82,21 +84,6 @@ struct TodoUpdate {
     done: Option<bool>,
 }
 
-
-struct TodoCreatedResponse {
-    id: String,
-}
-
-#[rocket::async_trait]
-impl<'r> Responder<'r, 'static> for TodoCreatedResponse {
-    fn respond_to(self, _: &'r Request<'_>) -> response::Result<'static> {
-        Response::build()
-            .header(Header::new("Location", format!("/tasks/{}", self.id)))
-            .status(Status::Created)
-            .ok()
-    }
-}
-
 #[launch]
 fn rocket() -> _ {
     let todos: Mutex<HashMap<String, Todo>> = Mutex::new(HashMap::new());
@@ -113,7 +100,7 @@ mod test {
     use test_context::{test_context, TestContext};
     use crate::core::Todo;
 
-    use super::{rocket};
+    use super::rocket;
 
     #[test_context(TodoApp)]
     #[test]
