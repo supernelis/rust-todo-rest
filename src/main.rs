@@ -10,8 +10,8 @@ use rocket::serde::{Deserialize, json::Json};
 mod core;
 use crate::core::Todo;
 
-mod rest;
-use crate::rest::TodoCreatedResponse;
+mod controllers;
+use crate::controllers::TodoCreatedResponse;
 
 #[get("/")]
 fn index() -> &'static str {
