@@ -4,7 +4,7 @@ extern crate rocket;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use rocket::State;
+use rocket::{Route, State};
 use rocket::http::Status;
 use rocket::serde::{Deserialize, json::Json};
 mod core;
@@ -12,6 +12,10 @@ use crate::core::Todo;
 
 mod controllers;
 use crate::controllers::TodoCreatedResponse;
+
+fn todo_routes() -> Vec<Route> {
+    routes![index, add_task, update_task, patch_task, get_task, delete_task]
+}
 
 #[get("/")]
 fn index() -> &'static str {
@@ -23,7 +27,6 @@ fn index() -> &'static str {
 struct TodoCreate {
     title: String,
 }
-
 #[post("/tasks", data = "<todo>")]
 fn add_task(todo: Json<TodoCreate>, todos: &State<Mutex<HashMap<String, Todo>>>) -> TodoCreatedResponse {
     let mut todos_map = todos.lock().unwrap();
@@ -87,8 +90,9 @@ fn rocket() -> _ {
     let todos: Mutex<HashMap<String, Todo>> = Mutex::new(HashMap::new());
     rocket::build()
         .manage(todos)
-        .mount("/", routes![index, add_task, update_task, patch_task, get_task, delete_task])
+        .mount("/", todo_routes())
 }
+
 
 #[cfg(test)]
 mod test {
