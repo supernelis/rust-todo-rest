@@ -1,8 +1,7 @@
 use rocket::serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, PartialEq)]
 #[serde(crate = "rocket::serde")]
-#[derive(PartialEq)]
 pub struct Todo {
     pub id: String,
     pub title: String,
