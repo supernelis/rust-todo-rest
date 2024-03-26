@@ -1,10 +1,5 @@
-#[macro_use]
-extern crate rocket;
-
-use crate::controllers::rocket;
-
-mod core;
-mod controllers;
+use rocket::launch;
+use rust_todo_rest::rocket;
 
 #[launch]
 fn app() -> _ {
