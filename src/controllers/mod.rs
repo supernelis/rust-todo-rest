@@ -12,10 +12,6 @@ use todo_create::TodoCreate;
 pub use todo_created_response::TodoCreatedResponse;
 use crate::core::Todo;
 
-pub fn todo_routes() -> Vec<Route> {
-    routes![index, add_task, update_task, patch_task, get_task, delete_task]
-}
-
 #[get("/")]
 fn index() -> &'static str {
     "Hello, world!"
@@ -84,4 +80,8 @@ pub fn rocket() -> Rocket<Build> {
     rocket::build()
         .manage(todos)
         .mount("/", todo_routes())
+}
+
+fn todo_routes() -> Vec<Route> {
+    routes![index, add_task, update_task, patch_task, get_task, delete_task]
 }
