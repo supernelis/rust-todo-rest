@@ -1,17 +1,14 @@
+use std::collections::HashMap;
+use std::sync::Mutex;
+
+use rocket::{Build, Rocket, Route};
+use rocket::routes;
+
+use crate::core::Todo;
+
 mod todo_created_response;
 mod todo_create;
 mod todo_update;
-
-use rocket::routes;
-use rocket::serde::json::Json;
-use rocket::{Build, Rocket, Route, State};
-use std::sync::Mutex;
-use std::collections::HashMap;
-use rocket::http::Status;
-use todo_create::TodoCreate;
-pub use todo_created_response::TodoCreatedResponse;
-use todo_update::TodoUpdate;
-use crate::core::Todo;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -19,12 +16,13 @@ fn index() -> &'static str {
 }
 
 pub mod todo_controller {
-    use rocket::routes;
-    use rocket::serde::json::Json;
-    use rocket::{Build, Rocket, Route, State};
-    use std::sync::Mutex;
     use std::collections::HashMap;
+    use std::sync::Mutex;
+
+    use rocket::{State};
     use rocket::http::Status;
+    use rocket::serde::json::Json;
+
     use crate::controllers::todo_create::TodoCreate;
     pub use crate::controllers::todo_created_response::TodoCreatedResponse;
     use crate::controllers::todo_update::TodoUpdate;
