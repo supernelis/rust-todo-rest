@@ -4,7 +4,7 @@ use rocket::serde::{Deserialize, Serialize};
 #[serde(crate = "rocket::serde")]
 #[derive(PartialEq)]
 pub struct Todo {
-    pub(crate) id: String,
-    pub(crate) title: String,
-    pub(crate) done: bool
+    pub id: String,
+    pub title: String,
+    pub done: bool
 }

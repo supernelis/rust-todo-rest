@@ -18,8 +18,8 @@ mod test {
     use rocket::local::blocking::{Client, LocalResponse};
     use test_context::{test_context, TestContext};
     use crate::controllers::rocket;
-
     use crate::core::Todo;
+
     #[test_context(TodoApp)]
     #[test]
     fn hello_world(todo_app: &mut TodoApp) {

@@ -4,4 +4,6 @@ extern crate rocket;
 pub use crate::controllers::rocket;
 
 mod core;
-mod controllers;
+
+pub use crate::core::Todo;
+pub mod controllers;

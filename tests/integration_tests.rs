@@ -1,7 +1,8 @@
 use rocket::http::{ContentType, Status};
+use rocket::http::hyper::header::LOCATION;
 use rocket::local::blocking::{Client, LocalResponse};
 use test_context::{test_context, TestContext};
-use rust_todo_rest::rocket;
+use rust_todo_rest::{rocket, Todo};
 
 #[test_context(TodoApp)]
 #[test]
@@ -10,6 +11,133 @@ fn hello_world(todo_app: &mut TodoApp) {
 
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_string().unwrap(), "Hello, world!");
+}
+
+#[test_context(TodoApp)]
+#[test]
+fn test_add_task(todo_app: &mut TodoApp) {
+    let response = todo_app.post("/tasks/", r##"
+            {
+                "title": "a title"
+            }
+            "##);
+
+    assert_eq!(response.status(), Status::Created);
+    assert_eq!(response.headers().get_one(LOCATION.as_str()).unwrap(), "/tasks/1");
+}
+
+#[test_context(TodoApp)]
+#[test]
+fn test_update_task(todo_app: &mut TodoApp) {
+    let response = todo_app.put("/tasks/1", r##"
+            {
+                "title": "another title"
+            }
+            "##);
+
+    assert_eq!(response.status(), Status::Ok);
+}
+
+#[test_context(TodoApp)]
+#[test]
+fn test_get_task(todo_app: &mut TodoApp) {
+    let create_task_response = todo_app.post("/tasks/", r##"
+            {
+                "title": "new title"
+            }
+            "##);
+
+    let get_task_response = todo_app.get(create_task_response.extract_location());
+    assert_eq!(get_task_response.status(), Status::Ok);
+    let todo = get_task_response.extract_todo();
+    assert_eq!(todo.id, "1");
+    assert_eq!(todo.title, "new title");
+    assert_eq!(todo.done, false)
+}
+
+
+#[test_context(TodoApp)]
+#[test]
+fn test_get_task_fails_with_404_when_getting_non_existent_task(todo_app: &mut TodoApp) {
+    let response = todo_app.get("/tasks/123");
+    assert_eq!(response.status(), Status::NotFound);
+}
+
+#[test_context(TodoApp)]
+#[test]
+fn test_delete(todo_app: &mut TodoApp) {
+    let response = todo_app.post("/tasks/", r##"
+            {
+                "title": "new title"
+            }
+            "##);
+
+    let location = response.extract_location();
+
+    let delete_response = todo_app.delete(location);
+    assert_eq!(delete_response.status(), Status::Accepted);
+
+    let get_response = todo_app.get(location);
+    assert_eq!(get_response.status(), Status::NotFound);
+}
+
+#[test_context(TodoApp)]
+#[test]
+fn test_delete_a_non_existing_task(todo_app: &mut TodoApp) {
+    let delete_response = todo_app.delete("/tasks/1");
+    assert_eq!(delete_response.status(), Status::NotFound);
+}
+
+#[test_context(TodoApp)]
+#[test]
+fn test_complete_a_task(todo_app: &mut TodoApp) {
+    let response = todo_app.post("/tasks/", r##"
+            {
+                "title": "new title"
+            }
+            "##);
+
+    let location = response.extract_location();
+    let response = todo_app.patch(location, r##"
+            {
+                "done": true
+            }
+            "##);
+
+    assert_eq!(response.status(), Status::Accepted);
+
+    let get_task_response = todo_app.get(location);
+    let todo = get_task_response.extract_todo();
+    assert_eq!(todo.done, true)
+}
+
+#[test_context(TodoApp)]
+#[test]
+fn test_mark_as_complete_a_nonexistent_task(todo_app: &mut TodoApp) {
+    let response = todo_app.patch("/tasks/1", r##"
+            {
+                "done": true
+            }
+            "##);
+
+    assert_eq!(response.status(), Status::NotFound);
+}
+
+trait ExtractResponses {
+    fn extract_location(&self) -> &str;
+    fn extract_todo(self) -> Todo;
+}
+
+impl ExtractResponses for LocalResponse<'_> {
+    fn extract_location(&self) -> &str {
+        self.headers()
+            .get_one("Location")
+            .unwrap()
+    }
+
+    fn extract_todo(self) -> Todo {
+        self.into_json::<Todo>().unwrap()
+    }
 }
 
 struct TodoApp {
