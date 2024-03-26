@@ -1,5 +1,6 @@
 mod todo_created_response;
 mod todo_create;
+mod todo_update;
 
 use rocket::routes;
 use rocket::serde::json::Json;
@@ -10,6 +11,7 @@ use rocket::http::Status;
 use rocket::serde::Deserialize;
 use todo_create::TodoCreate;
 pub use todo_created_response::TodoCreatedResponse;
+use todo_update::TodoUpdate;
 use crate::core::Todo;
 
 #[get("/")]
@@ -67,12 +69,6 @@ fn delete_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Status 
         return Status::NotFound;
     }
     Status::Accepted
-}
-
-#[derive(Deserialize)]
-#[serde(crate = "rocket::serde")]
-struct TodoUpdate {
-    done: Option<bool>,
 }
 
 pub fn rocket() -> Rocket<Build> {
