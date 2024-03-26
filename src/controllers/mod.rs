@@ -8,7 +8,6 @@ use rocket::{Build, Rocket, Route, State};
 use std::sync::Mutex;
 use std::collections::HashMap;
 use rocket::http::Status;
-use rocket::serde::Deserialize;
 use todo_create::TodoCreate;
 pub use todo_created_response::TodoCreatedResponse;
 use todo_update::TodoUpdate;
