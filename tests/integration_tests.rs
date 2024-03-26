@@ -1,8 +1,17 @@
 use rocket::http::{ContentType, Status};
 use rocket::http::hyper::header::LOCATION;
 use rocket::local::blocking::{Client, LocalResponse};
+use rocket::serde::{Deserialize, Serialize};
 use test_context::{test_context, TestContext};
-use rust_todo_rest::{rocket, Todo};
+use rust_todo_rest::{rocket};
+
+#[derive(Deserialize, Serialize, Clone)]
+#[serde(crate = "rocket::serde")]
+struct Todo {
+    id: String,
+    title: String,
+    done: bool
+}
 
 #[test_context(TodoApp)]
 #[test]
