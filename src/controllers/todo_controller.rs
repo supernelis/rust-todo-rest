@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use rocket::State;
+use rocket::{Route, State};
 use rocket::http::Status;
 use rocket::serde::json::Json;
 
@@ -60,4 +60,8 @@ pub fn delete_task(id: &str, todos: &State<Mutex<HashMap<String, Todo>>>) -> Sta
         return Status::NotFound;
     }
     Status::Accepted
+}
+
+pub fn routes() -> Vec<Route> {
+    routes![add_task, update_task, patch_task, get_task, delete_task]
 }

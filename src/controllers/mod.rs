@@ -24,5 +24,5 @@ pub fn rocket() -> Rocket<Build> {
 }
 
 fn todo_routes() -> Vec<Route> {
-    routes![index, todo_controller::add_task, todo_controller::update_task, todo_controller::patch_task, todo_controller::get_task, todo_controller::delete_task]
+    [routes![index], todo_controller::routes()].concat()
 }
