@@ -3,7 +3,7 @@ use rocket::http::hyper::header::LOCATION;
 use rocket::local::blocking::{Client, LocalResponse};
 use rocket::serde::{Deserialize, Serialize};
 use test_context::{test_context, TestContext};
-use rust_todo_rest::{create_todo_app};
+use rust_todo_rest::{create_todo_app, MockReporter};
 
 #[derive(Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
@@ -25,6 +25,8 @@ fn hello_world(todo_app: &mut TodoApp) {
 #[test_context(TodoApp)]
 #[test]
 fn test_add_task(todo_app: &mut TodoApp) {
+    todo_app.reporter.expect_report_todo_created().times(1);
+    // set expectations
     let response = todo_app.post("/tasks/", r##"
             {
                 "title": "a title"
@@ -151,6 +153,7 @@ impl ExtractResponses for LocalResponse<'_> {
 
 struct TodoApp {
     client: Client,
+    reporter: MockReporter
 }
 
 impl TodoApp {
@@ -166,7 +169,8 @@ impl TodoApp {
 impl TestContext for TodoApp {
     fn setup() -> Self {
         Self {
-            client: Client::tracked(create_todo_app()).expect("valid rocket instance")
+            client: Client::tracked(create_todo_app()).expect("valid rocket instance"),
+            reporter: MockReporter::new()
         }
     }
 }

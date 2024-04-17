@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
+use mockall::automock;
 
 use rocket::{Build, Rocket, Route};
 use rocket::routes;
@@ -25,4 +26,9 @@ pub fn create_todo_app() -> Rocket<Build> {
 
 fn todo_routes() -> Vec<Route> {
     [routes![index], todo_controller::routes()].concat()
+}
+
+#[automock]
+pub trait Reporter{
+    fn report_todo_created(&self);
 }
