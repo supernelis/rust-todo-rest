@@ -3,7 +3,7 @@ use rocket::http::hyper::header::LOCATION;
 use rocket::local::blocking::{Client, LocalResponse};
 use rocket::serde::{Deserialize, Serialize};
 use test_context::{test_context, TestContext};
-use rust_todo_rest::{rocket};
+use rust_todo_rest::{create_todo_app};
 
 #[derive(Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
@@ -166,7 +166,7 @@ impl TodoApp {
 impl TestContext for TodoApp {
     fn setup() -> Self {
         Self {
-            client: Client::tracked(rocket()).expect("valid rocket instance")
+            client: Client::tracked(create_todo_app()).expect("valid rocket instance")
         }
     }
 }

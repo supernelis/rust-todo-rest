@@ -16,7 +16,7 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
-pub fn rocket() -> Rocket<Build> {
+pub fn create_todo_app() -> Rocket<Build> {
     let todos: Mutex<HashMap<String, Todo>> = Mutex::new(HashMap::new());
     rocket::build()
         .manage(todos)
