@@ -168,9 +168,10 @@ impl TodoApp {
 
 impl TestContext for TodoApp {
     fn setup() -> Self {
+        let reporter = MockReporter::new();
         Self {
-            client: Client::tracked(create_todo_app()).expect("valid rocket instance"),
-            reporter: MockReporter::new()
+            client: Client::tracked(create_todo_app(&reporter)).expect("valid rocket instance"),
+            reporter: reporter
         }
     }
 }
