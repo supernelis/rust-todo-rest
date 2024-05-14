@@ -3,7 +3,7 @@ use rocket::http::hyper::header::LOCATION;
 use rocket::local::blocking::{Client, LocalResponse};
 use rocket::serde::{Deserialize, Serialize};
 use test_context::{test_context, TestContext};
-use rust_todo_rest::{create_todo_app, MockReporter};
+use rust_todo_rest::{ConsoleReporter, create_todo_app, MockReporter};
 
 #[derive(Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
@@ -22,10 +22,17 @@ fn hello_world(todo_app: &mut TodoApp) {
     assert_eq!(response.into_string().unwrap(), "Hello, world!");
 }
 
-#[test_context(TodoApp)]
 #[test]
-fn test_add_task(todo_app: &mut TodoApp) {
-    todo_app.reporter.expect_report_todo_created().times(1);
+fn test_add_task() {
+
+    let mut reporter = Box::new(MockReporter::new());
+    reporter.expect_report_todo_created().times(1).returning(||{});
+
+    let todo_app = TodoApp {
+        client: Client::tracked(create_todo_app(reporter)).expect("valid rocket instance")
+    };
+
+    //todo_app.reporter.expect_report_todo_created().times(1);
     // set expectations
     let response = todo_app.post("/tasks/", r##"
             {
@@ -152,8 +159,7 @@ impl ExtractResponses for LocalResponse<'_> {
 }
 
 struct TodoApp {
-    client: Client,
-    reporter: MockReporter
+    client: Client
 }
 
 impl TodoApp {
@@ -168,10 +174,9 @@ impl TodoApp {
 
 impl TestContext for TodoApp {
     fn setup() -> Self {
-        let reporter = MockReporter::new();
+        let reporter = Box::new(ConsoleReporter{});
         Self {
-            client: Client::tracked(create_todo_app(&reporter)).expect("valid rocket instance"),
-            reporter: reporter
+            client: Client::tracked(create_todo_app(reporter)).expect("valid rocket instance")
         }
     }
 }

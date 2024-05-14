@@ -4,6 +4,7 @@ use std::sync::Mutex;
 use rocket::{Route, State};
 use rocket::http::Status;
 use rocket::serde::json::Json;
+use crate::controllers::Reporter;
 
 use crate::controllers::todo_create::TodoCreate;
 pub use crate::controllers::todo_created_response::TodoCreatedResponse;
@@ -11,7 +12,7 @@ use crate::controllers::todo_update::TodoUpdate;
 use crate::core::Todo;
 
 #[post("/tasks", data = "<todo>")]
-fn add_task(todo: Json<TodoCreate>, todos: &State<Mutex<HashMap<String, Todo>>>) -> TodoCreatedResponse {
+fn add_task(todo: Json<TodoCreate>, todos: &State<Mutex<HashMap<String, Todo>>>, reporter: &State<Box<dyn Reporter>>) -> TodoCreatedResponse {
     let mut todos_map = todos.lock().unwrap();
     let todo_index = todos_map.len() + 1;
     todos_map.insert(todo_index.to_string(), Todo {
@@ -19,6 +20,9 @@ fn add_task(todo: Json<TodoCreate>, todos: &State<Mutex<HashMap<String, Todo>>>)
         title: todo.title.clone(),
         done: false,
     });
+
+    reporter.report_todo_created();
+
     TodoCreatedResponse {
         id: todo_index.to_string()
     }

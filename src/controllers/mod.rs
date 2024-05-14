@@ -17,7 +17,7 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
-pub fn create_todo_app(reporter :&'static dyn Reporter) -> Rocket<Build> {
+pub fn create_todo_app(reporter : Box<dyn Reporter>) -> Rocket<Build> {
     let todos: Mutex<HashMap<String, Todo>> = Mutex::new(HashMap::new());
     rocket::build()
         .manage(todos)
@@ -30,7 +30,7 @@ fn todo_routes() -> Vec<Route> {
 }
 
 #[automock]
-pub trait Reporter:Sync{
+pub trait Reporter: Sync + Send {
     fn report_todo_created(&self);
 }
 
